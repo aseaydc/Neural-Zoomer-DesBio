@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Zoomer Plus - DesBio Protocol</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        .content { padding: 30px; }
+        .patient-info {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        .patient-info h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .marker-category {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+        .marker-category:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+        }
+        .category-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .category-header h3 { font-size: 1.3em; }
+        .marker-count {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .marker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+        }
+        .marker-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .marker-item:hover {
+            background: #eef0ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        .marker-item.positive {
+            background: #fff5f5;
+            border-color: #fc8181;
+        }
+        .marker-item.borderline {
+            background: #fffaf0;
+            border-color: #f6ad55;
+        }
+        .marker-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .marker-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .marker-checkbox label {
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+        }
+        .status-select {
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9em;
+            width: 100%;
+        }
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .btn-clear {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .btn-clear:hover { background: #d0d0d0; }
+        .protocol-output {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+        .protocol-output.show { display: block; }
+        .protocol-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: 30px;
+        }
+        .protocol-header h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .patient-details {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .patient-details h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .patient-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .patient-detail-item {
+            display: flex;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+        }
+        .patient-detail-item strong {
+            color: #667eea;
+            margin-right: 10px;
+            min-width: 120px;
+        }
+        .positive-markers {
+            margin: 25px 0;
+        }
+        .positive-markers h3 {
+            color: #dc3545;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dc3545;
+        }
+        .positive-markers ul {
+            list-style: none;
+            padding: 0;
+        }
+        .positive-markers li {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #fff5f5;
+            border-left: 4px solid #dc3545;
+            border-radius: 4px;
+        }
+        .borderline-markers {
+            margin: 25px 0;
+        }
+        .borderline-markers h3 {
+            color: #f6ad55;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f6ad55;
+        }
+        .borderline-markers ul {
+            list-style: none;
+            padding: 0;
+        }
+        .borderline-markers li {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #fffaf0;
+            border-left: 4px solid #f6ad55;
+            border-radius: 4px;
+        }
+        .protocol-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            page-break-inside: avoid;
+        }
+        .protocol-section h3 {
+            color: #667eea;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .protocol-section h4 {
+            color: #764ba2;
+            font-size: 1.2em;
+            margin: 20px 0 15px 0;
+        }
+        .product-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            page-break-inside: avoid;
+        }
+        .product-name {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        .product-dose {
+            color: #666;
+            margin: 5px 0;
+            padding-left: 15px;
+        }
+        .product-notes {
+            color: #555;
+            font-style: italic;
+            margin-top: 8px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        .phase-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+        .phase-title {
+            background: #667eea;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        .clinical-note {
+            background: #fff9e6;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .clinical-note strong { color: #f57c00; }
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; }
+            .patient-info, .marker-category, .button-container { display: none !important; }
+            .protocol-output { display: block !important; border: none; }
+        }
+        @media (max-width: 768px) {
+            .marker-grid { grid-template-columns: 1fr; }
+            .patient-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Neural Zoomer Plus Protocol</h1>
+            <p>Comprehensive Neurological Assessment - DesBio Treatment System</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">48 Neurological Markers | Homeopathic & Nutritional Support</p>
+        </div>
+
+        <div class="content">
+            <!-- Patient Information -->
+            <div class="patient-info">
+                <h2>📋 Patient Information</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patientName">Patient Name:</label>
+                        <input type="text" id="patientName" placeholder="Enter patient name">
+                    </div>
+                    <div class="form-group">
+                        <label for="patientDOB">Date of Birth:</label>
+                        <input type="date" id="patientDOB">
+                    </div>
+                    <div class="form-group">
+                        <label for="patientAge">Patient Age:</label>
+                        <select id="patientAge">
+                            <option value="">Select Age Group</option>
+                            <option value="child-2-5">2-5 years</option>
+                            <option value="child-6-12">6-12 years</option>
+                            <option value="teen-13-17">13-17 years</option>
+                            <option value="adult-18+">18+ years (Adult)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="testDate">Test Date:</label>
+                        <input type="date" id="testDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="providerName">Provider Name:</label>
+                        <input type="text" id="providerName" placeholder="Enter provider name">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demyelination Antigens -->
+            <div class="marker-category">
+                <div class="category-header">
+                    <h3>🧬 Demyelination Antigens</h3>
+                    <span class="marker-count">6 Markers</span>
+                </div>
+                <div class="marker-grid">
+                    <div class="marker-item" data-category="demyelination">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker1" data-marker="Anti-MAG" data-products="CerebroMax,Liposomal CoQ10">
+                            <label for="marker1">Anti-MAG (Myelin Associated Glycoprotein)</label>
+                        </div>
+                        <select class="status-select" id="status1" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="demyelination">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker2" data-marker="Anti-Neurofascin" data-products="SpinalMax,Liposomal Restore">
+                            <label for="marker2">Anti-Neurofascin</label>
+                        </div>
+                        <select class="status-select" id="status2" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="demyelination">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker3" data-marker="Anti-Myelin oligodendrocyte glycoprotein" data-products="CerebroMax,TriCurcumin">
+                            <label for="marker3">Anti-Myelin Oligodendrocyte Glycoprotein</label>
+                        </div>
+                        <select class="status-select" id="status3" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="demyelination">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker4" data-marker="Anti-Myelin basic protein" data-products="CerebroMax,Liposomal Resveratrol Curcumin">
+                            <label for="marker4">Anti-Myelin Basic Protein</label>
+                        </div>
+                        <select class="status-select" id="status4" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="demyelination">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker5" data-marker="Anti-Myelin proteolipid protein" data-products="CerebroMax,Liposomal Magnesium">
+                            <label for="marker5">Anti-Myelin Proteolipid Protein</label>
+                        </div>
+                        <select class="status-select" id="status5" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="demyelination">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker6" data-marker="Anti-Tubulin" data-products="CerebroMax,SpinalMax,Vitalyze">
+                            <label for="marker6">Anti-Tubulin</label>
+                        </div>
+                        <select class="status-select" id="status6" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blood Brain Barrier Disruption -->
+            <div class="marker-category">
+                <div class="category-header">
+                    <h3>🛡️ Blood Brain Barrier Disruption</h3>
+                    <span class="marker-count">4 Markers</span>
+                </div>
+                <div class="marker-grid">
+                    <div class="marker-item" data-category="bbb">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker7" data-marker="Anti-Microglia" data-products="TriCurcumin,Immune Support">
+                            <label for="marker7">Anti-Microglia</label>
+                        </div>
+                        <select class="status-select" id="status7" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="bbb">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker8" data-marker="Anti-Glial fibrillary acidic protein" data-products="TriCurcumin,Liposomal Glutathione">
+                            <label for="marker8">Anti-Glial Fibrillary Acidic Protein</label>
+                        </div>
+                        <select class="status-select" id="status8" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="bbb">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker9" data-marker="Anti-s100b" data-products="CerebroMax,TriCurcumin">
+                            <label for="marker9">Anti-s100b</label>
+                        </div>
+                        <select class="status-select" id="status9" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="bbb">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker10" data-marker="Anti-Glucose regulated protein 78" data-products="Liposomal Glutathione,OmniCleanse">
+                            <label for="marker10">Anti-Glucose Regulated Protein 78</label>
+                        </div>
+                        <select class="status-select" id="status10" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optical and Autonomic Nervous System -->
+            <div class="marker-category">
+                <div class="category-header">
+                    <h3>👁️ Optical & Autonomic Nervous System</h3>
+                    <span class="marker-count">4 Markers</span>
+                </div>
+                <div class="marker-grid">
+                    <div class="marker-item" data-category="optical">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker11" data-marker="Anti-Neuron specific enolase" data-products="CerebroMax,Vitalyze">
+                            <label for="marker11">Anti-Neuron Specific Enolase</label>
+                        </div>
+                        <select class="status-select" id="status11" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="optical">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker12" data-marker="Anti-Aquaporin4" data-products="TriCurcumin,Spectric">
+                            <label for="marker12">Anti-Aquaporin4</label>
+                        </div>
+                        <select class="status-select" id="status12" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="optical">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker13" data-marker="Anti-Recoverin" data-products="CerebroMax,Liposomal CoQ10">
+                            <label for="marker13">Anti-Recoverin</label>
+                        </div>
+                        <select class="status-select" id="status13" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="optical">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker14" data-marker="Anti-CVX" data-products="SpinalMax,Vitalyze">
+                            <label for="marker14">Anti-CVX</label>
+                        </div>
+                        <select class="status-select" id="status14" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Peripheral Neuropathy -->
+            <div class="marker-category">
+                <div class="category-header">
+                    <h3>🦵 Peripheral Neuropathy</h3>
+                    <span class="marker-count">5 Markers</span>
+                </div>
+                <div class="marker-grid">
+                    <div class="marker-item" data-category="neuropathy">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker15" data-marker="Anti-GM1" data-products="SpinalMax,Liposomal Restore">
+                            <label for="marker15">Anti-GM1</label>
+                        </div>
+                        <select class="status-select" id="status15" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="neuropathy">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker16" data-marker="Anti-GM2" data-products="SpinalMax,Liposomal Methyl B">
+                            <label for="marker16">Anti-GM2</label>
+                        </div>
+                        <select class="status-select" id="status16" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="neuropathy">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker17" data-marker="Anti-Hu" data-products="CerebroMax,Spectric">
+                            <label for="marker17">Anti-Hu</label>
+                        </div>
+                        <select class="status-select" id="status17" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="neuropathy">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker18" data-marker="Anti-Ri" data-products="CerebroMax,Immune Support">
+                            <label for="marker18">Anti-Ri</label>
+                        </div>
+                        <select class="status-select" id="status18" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="neuropathy">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker19" data-marker="Anti-Amphiphysin" data-products="SpinalMax,Liposomal Calm">
+                            <label for="marker19">Anti-Amphiphysin</label>
+                        </div>
+                        <select class="status-select" id="status19" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Neuromuscular Disorders -->
+            <div class="marker-category">
+                <div class="category-header">
+                    <h3>💪 Neuromuscular Disorders</h3>
+                    <span class="marker-count">5 Markers</span>
+                </div>
+                <div class="marker-grid">
+                    <div class="marker-item" data-category="neuromuscular">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker20" data-marker="Anti-Muscle specific kinase" data-products="CerebroMax,Multi-Trace Mineral">
+                            <label for="marker20">Anti-Muscle Specific Kinase</label>
+                        </div>
+                        <select class="status-select" id="status20" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="neuromuscular">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker21" data-marker="Anti-Voltage gated calcium channels" data-products="Liposomal Magnesium,Liposomal D3/K2">
+                            <label for="marker21">Anti-Voltage Gated Calcium Channels</label>
+                        </div>
+                        <select class="status-select" id="status21" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="neuromuscular">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker22" data-marker="Anti-Voltage gated potassium channels" data-products="Liposomal Magnesium,Liposomal Calm">
+                            <label for="marker22">Anti-Voltage Gated Potassium Channels</label>
+                        </div>
+                        <select class="status-select" id="status22" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="neuromuscular">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker23" data-marker="Anti-Titin" data-products="CerebroMax,Liposomal CoQ10">
+                            <label for="marker23">Anti-Titin</label>
+                        </div>
+                        <select class="status-select" id="status23" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="neuromuscular">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker24" data-marker="Anti-Acetylcholine receptors" data-products="CerebroMax,Liposomal Magnesium">
+                            <label for="marker24">Anti-Acetylcholine Receptors</label>
+                        </div>
+                        <select class="status-select" id="status24" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brain Inflammation -->
+            <div class="marker-category">
+                <div class="category-header">
+                    <h3>🔥 Brain Inflammation</h3>
+                    <span class="marker-count">11 Markers</span>
+                </div>
+                <div class="marker-grid">
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker25" data-marker="Anti-NMDA receptor" data-products="TriCurcumin,CerebroMax">
+                            <label for="marker25">Anti-NMDA Receptor</label>
+                        </div>
+                        <select class="status-select" id="status25" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker26" data-marker="Anti-AMPA receptor" data-products="TriCurcumin,Liposomal Calm">
+                            <label for="marker26">Anti-AMPA Receptor</label>
+                        </div>
+                        <select class="status-select" id="status26" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker27" data-marker="Anti-Dopamine receptor 1" data-products="Vitalyze,CerebroMax">
+                            <label for="marker27">Anti-Dopamine Receptor 1</label>
+                        </div>
+                        <select class="status-select" id="status27" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker28" data-marker="Anti-Dopamine receptor 2" data-products="Vitalyze,CerebroMax">
+                            <label for="marker28">Anti-Dopamine Receptor 2</label>
+                        </div>
+                        <select class="status-select" id="status28" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker29" data-marker="Anti-GABA receptors" data-products="Liposomal Calm,CerebroMax">
+                            <label for="marker29">Anti-GABA Receptors</label>
+                        </div>
+                        <select class="status-select" id="status29" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker30" data-marker="Anti-Dipeptidyl aminopeptidase like protein 6" data-products="TriCurcumin,Immune Support">
+                            <label for="marker30">Anti-Dipeptidyl Aminopeptidase Like Protein 6</label>
+                        </div>
+                        <select class="status-select" id="status30" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker31" data-marker="Anti-Glycine receptor" data-products="Liposomal Calm,SpinalMax">
+                            <label for="marker31">Anti-Glycine Receptor</label>
+                        </div>
+                        <select class="status-select" id="status31" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker32" data-marker="Anti-Neurexin 3" data-products="Spectric,Vitalyze">
+                            <label for="marker32">Anti-Neurexin 3</label>
+                        </div>
+                        <select class="status-select" id="status32" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker33" data-marker="Anti-Contactin associated protein-like 2" data-products="Spectric,CerebroMax">
+                            <label for="marker33">Anti-Contactin Associated Protein-Like 2</label>
+                        </div>
+                        <select class="status-select" id="status33" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker34" data-marker="Anti-Leucine-rich glioma-inactivated protein 1" data-products="TriCurcumin,CerebroMax">
+                            <label for="marker34">Anti-Leucine-Rich Glioma-Inactivated Protein 1</label>
+                        </div>
+                        <select class="status-select" id="status34" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="inflammation">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker35" data-marker="Anti-Ma" data-products="CerebroMax,TriCurcumin">
+                            <label for="marker35">Anti-Ma</label>
+                        </div>
+                        <select class="status-select" id="status35" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brain Autoimmunity -->
+            <div class="marker-category">
+                <div class="category-header">
+                    <h3>🧠 Brain Autoimmunity</h3>
+                    <span class="marker-count">13 Markers</span>
+                </div>
+                <div class="marker-grid">
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker36" data-marker="Anti-Cerebellum" data-products="CerebroMax,SpinalMax">
+                            <label for="marker36">Anti-Cerebellum</label>
+                        </div>
+                        <select class="status-select" id="status36" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker37" data-marker="Anti-Purkinje cell" data-products="CerebroMax,Liposomal CoQ10">
+                            <label for="marker37">Anti-Purkinje Cell</label>
+                        </div>
+                        <select class="status-select" id="status37" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker38" data-marker="Anti-Yo" data-products="CerebroMax,TriCurcumin">
+                            <label for="marker38">Anti-Yo</label>
+                        </div>
+                        <select class="status-select" id="status38" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker39" data-marker="Anti-Amyloid beta (1-42)" data-products="Vitalyze,OmniEssentials">
+                            <label for="marker39">Anti-Amyloid Beta (1-42)</label>
+                        </div>
+                        <select class="status-select" id="status39" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker40" data-marker="Anti-Tau" data-products="Vitalyze,Liposomal Resveratrol Curcumin">
+                            <label for="marker40">Anti-Tau</label>
+                        </div>
+                        <select class="status-select" id="status40" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker41" data-marker="Anti-Glutamate" data-products="Liposomal Magnesium,Liposomal Calm">
+                            <label for="marker41">Anti-Glutamate</label>
+                        </div>
+                        <select class="status-select" id="status41" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker42" data-marker="Anti-Dopamine" data-products="Vitalyze,CerebroMax">
+                            <label for="marker42">Anti-Dopamine</label>
+                        </div>
+                        <select class="status-select" id="status42" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker43" data-marker="Hydroxytryptamine" data-products="Elevate,Mood Swings">
+                            <label for="marker43">Hydroxytryptamine (Serotonin)</label>
+                        </div>
+                        <select class="status-select" id="status43" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker44" data-marker="Anti-Alpha-synuclein" data-products="Liposomal CoQ10,TriCurcumin">
+                            <label for="marker44">Anti-Alpha-Synuclein</label>
+                        </div>
+                        <select class="status-select" id="status44" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker45" data-marker="Anti-alpha1 and beta2 adrenergic receptors" data-products="Liposomal Calm,Vitalyze">
+                            <label for="marker45">Anti-Alpha1 and Beta2 Adrenergic Receptors</label>
+                        </div>
+                        <select class="status-select" id="status45" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker46" data-marker="Anti-Endothelin A receptor" data-products="Liposomal CoQ10,OmniEssentials">
+                            <label for="marker46">Anti-Endothelin A Receptor</label>
+                        </div>
+                        <select class="status-select" id="status46" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker47" data-marker="Anti-Amyloid beta (25-35)" data-products="Vitalyze,Liposomal Resveratrol Curcumin">
+                            <label for="marker47">Anti-Amyloid Beta (25-35)</label>
+                        </div>
+                        <select class="status-select" id="status47" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="autoimmunity">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker48" data-marker="Anti-RAGE peptide" data-products="TriCurcumin,Liposomal Glutathione">
+                            <label for="marker48">Anti-RAGE Peptide</label>
+                        </div>
+                        <select class="status-select" id="status48" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infections -->
+            <div class="marker-category">
+                <div class="category-header">
+                    <h3>🦠 Infections</h3>
+                    <span class="marker-count">7 Markers</span>
+                </div>
+                <div class="marker-grid">
+                    <div class="marker-item" data-category="infection">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker49" data-marker="Anti-HSV1" data-products="HERS:SSR,Smart Silver">
+                            <label for="marker49">Anti-HSV1 (Herpes Simplex Virus 1)</label>
+                        </div>
+                        <select class="status-select" id="status49" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="infection">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker50" data-marker="Anti-HSV2" data-products="HERS:SSR,Smart Silver">
+                            <label for="marker50">Anti-HSV2 (Herpes Simplex Virus 2)</label>
+                        </div>
+                        <select class="status-select" id="status50" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="infection">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker51" data-marker="Anti-EBV" data-products="EPST:SSR,Virimmune">
+                            <label for="marker51">Anti-EBV (Epstein-Barr Virus)</label>
+                        </div>
+                        <select class="status-select" id="status51" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="infection">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker52" data-marker="Anti-CMV" data-products="CYTO:SSR,Smart Silver">
+                            <label for="marker52">Anti-CMV (Cytomegalovirus)</label>
+                        </div>
+                        <select class="status-select" id="status52" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="infection">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker53" data-marker="Anti-HHV 6" data-products="HV-6:SSR,Liposomal D3/K2">
+                            <label for="marker53">Anti-HHV 6 (Human Herpesvirus 6)</label>
+                        </div>
+                        <select class="status-select" id="status53" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="infection">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker54" data-marker="Anti-HHV 7" data-products="VIR:Combination,Liposomal Zinc">
+                            <label for="marker54">Anti-HHV 7 (Human Herpesvirus 7)</label>
+                        </div>
+                        <select class="status-select" id="status54" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                    <div class="marker-item" data-category="infection">
+                        <div class="marker-checkbox">
+                            <input type="checkbox" id="marker55" data-marker="Anti-Streptococcal A" data-products="STRE:SSR,Smart Silver">
+                            <label for="marker55">Anti-Streptococcal A</label>
+                        </div>
+                        <select class="status-select" id="status55" disabled>
+                            <option value="">Select Status</option>
+                            <option value="positive">Positive</option>
+                            <option value="borderline">Borderline/Moderate</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-container">
+                <button class="btn btn-generate" onclick="generateProtocol()">🎯 Generate Treatment Protocol</button>
+                <button class="btn btn-clear" onclick="clearForm()">🔄 Clear All</button>
+            </div>
+
+            <!-- Protocol Output -->
+            <div id="protocolOutput" class="protocol-output"></div>
+        </div>
+    </div>
+
+    <script>
+        // Enable/disable status selects based on checkbox
+        document.querySelectorAll('input[type="checkbox"]').forEach((checkbox, index) => {
+            checkbox.addEventListener('change', function() {
+                const statusSelect = document.getElementById(`status${index + 1}`);
+                if (statusSelect) {
+                    statusSelect.disabled = !this.checked;
+                    if (!this.checked) {
+                        statusSelect.value = '';
+                        this.closest('.marker-item').classList.remove('positive', 'borderline');
+                    }
+                }
+            });
+        });
+
+        // Update marker styling based on status
+        document.querySelectorAll('.status-select').forEach((select, index) => {
+            select.addEventListener('change', function() {
+                const markerItem = this.closest('.marker-item');
+                markerItem.classList.remove('positive', 'borderline');
+                if (this.value) {
+                    markerItem.classList.add(this.value);
+                }
+            });
+        });
+
+        function generateProtocol() {
+            const patientName = document.getElementById('patientName').value || 'Not Provided';
+            const patientDOB = document.getElementById('patientDOB').value || 'Not Provided';
+            const patientAge = document.getElementById('patientAge').value || '';
+            const testDate = document.getElementById('testDate').value || 'Not Provided';
+            const providerName = document.getElementById('providerName').value || 'Not Provided';
+
+            const positiveMarkers = [];
+            const borderlineMarkers = [];
+            const productSet = new Set();
+            const categoryMap = {
+                demyelination: [],
+                bbb: [],
+                optical: [],
+                neuropathy: [],
+                neuromuscular: [],
+                inflammation: [],
+                autoimmunity: [],
+                infection: []
+            };
+
+            // Collect all positive and borderline markers with their products
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach((checkbox) => {
+                const markerName = checkbox.getAttribute('data-marker');
+                const products = checkbox.getAttribute('data-products');
+                const category = checkbox.closest('.marker-item').getAttribute('data-category');
+                const statusSelect = checkbox.closest('.marker-item').querySelector('.status-select');
+                const status = statusSelect.value;
+
+                if (status === 'positive') {
+                    positiveMarkers.push({name: markerName, products: products, category: category});
+                    if (category) categoryMap[category].push(markerName);
+                } else if (status === 'borderline') {
+                    borderlineMarkers.push({name: markerName, products: products, category: category});
+                    if (category) categoryMap[category].push(markerName);
+                }
+
+                // Add products to set
+                if (products) {
+                    products.split(',').forEach(p => productSet.add(p.trim()));
+                }
+            });
+
+            if (positiveMarkers.length === 0 && borderlineMarkers.length === 0) {
+                alert('Please select at least one marker and set its status!');
+                return;
+            }
+
+            // Determine age-appropriate dosing
+            let ageGroup = '';
+            let vitalyzeAllowed = false;
+            if (patientAge === 'child-2-5') {
+                ageGroup = '2-5 years';
+            } else if (patientAge === 'child-6-12') {
+                ageGroup = '6-12 years';
+            } else if (patientAge === 'teen-13-17') {
+                ageGroup = '13-17 years';
+            } else {
+                ageGroup = 'Adult (18+)';
+                vitalyzeAllowed = true;
+            }
+
+            let protocolHTML = `
+                <div class="protocol-header">
+                    <h2>Neural Zoomer Plus Treatment Protocol</h2>
+                    <p style="color: #666;">Personalized DesBio Support Protocol</p>
+                </div>
+
+                <div class="patient-details">
+                    <h3>Patient Information</h3>
+                    <div class="patient-grid">
+                        <div class="patient-detail-item">
+                            <strong>Patient Name:</strong> <span>${patientName}</span>
+                        </div>
+                        <div class="patient-detail-item">
+                            <strong>Date of Birth:</strong> <span>${patientDOB}</span>
+                        </div>
+                        <div class="patient-detail-item">
+                            <strong>Age Group:</strong> <span>${ageGroup}</span>
+                        </div>
+                        <div class="patient-detail-item">
+                            <strong>Test Date:</strong> <span>${testDate}</span>
+                        </div>
+                        <div class="patient-detail-item">
+                            <strong>Provider:</strong> <span>${providerName}</span>
+                        </div>
+                        <div class="patient-detail-item">
+                            <strong>Protocol Date:</strong> <span>${new Date().toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (positiveMarkers.length > 0) {
+                protocolHTML += `
+                    <div class="positive-markers">
+                        <h3>Positive Markers (${positiveMarkers.length})</h3>
+                        <ul>
+                            ${positiveMarkers.map(marker => `<li>${marker.name}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (borderlineMarkers.length > 0) {
+                protocolHTML += `
+                    <div class="borderline-markers">
+                        <h3>Borderline/Moderate Markers (${borderlineMarkers.length})</h3>
+                        <ul>
+                            ${borderlineMarkers.map(marker => `<li>${marker.name}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // PHASE 1: DETOXIFICATION
+            protocolHTML += `
+                <div class="protocol-section">
+                    <h3>PHASE 1: Neurological Detoxification (Week 1-9)</h3>
+                    <div class="clinical-note">
+                        <strong>IMPORTANT:</strong> Start detox protocol at least one week before beginning other products and continue throughout treatment
+                    </div>
+                    
+                    <h4>Comprehensive Homeopathic Detox Kit (60-day minimum):</h4>
+                    
+                    <div class="product-item">
+                        <div class="product-name">Days 1-3: Brain & Spinal Support</div>
+                        <div class="product-dose">• CerebroMax: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                        <div class="product-dose">• SpinalMax: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                        <div class="product-dose">• Matrix Support: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                        <div class="product-notes">
+                            <strong>Clinical Rationale:</strong> CerebroMax provides targeted brain support, SpinalMax addresses peripheral nerve issues, and Matrix Support opens extracellular matrix drainage pathways.
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Days 4-7: Deep Detoxification</div>
+                        <div class="product-dose">• Detox I: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                        <div class="product-dose">• Detox II: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                        <div class="product-dose">• Detox III: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                        <div class="product-notes">
+                            <strong>Clinical Rationale:</strong> Systematic drainage of toxins through Phase 1, 2, and 3 detoxification pathways. Continue cycling: 3 days brain support, 4 days detox support throughout 60-day protocol.
+                        </div>
+                    </div>
+            `;
+
+            if (vitalyzeAllowed) {
+                protocolHTML += `
+                    <div class="clinical-note">
+                        <strong>Enhanced Detox Support (Adults Only):</strong><br>
+                        • OmniCleanse Powdered Beverage: 1 serving daily for 14 days<br>
+                        • OmniCleanse Capsules: 1 capsule three times daily for 14 days
+                    </div>
+                `;
+            }
+
+            protocolHTML += `</div>`;
+
+            // PHASE 2: CORE NEUROLOGICAL SUPPORT
+            protocolHTML += `
+                <div class="protocol-section">
+                    <h3>PHASE 2: Core Neurological Support (Ongoing)</h3>
+                    <div class="clinical-note">
+                        <strong>Continue these products after completing initial 60-day detox cycle</strong>
+                    </div>
+            `;
+
+            // Always include core products
+            protocolHTML += `
+                <div class="product-item">
+                    <div class="product-name">CerebroMax</div>
+                    <div class="product-dose">📋 Dosing: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                    <div class="product-notes">
+                        <strong>Primary Indication:</strong> Brain support, neurological function<br>
+                        <strong>Why Selected:</strong> Foundation for all neurological protocols - supports brain health and cognitive function
+                    </div>
+                </div>
+
+                <div class="product-item">
+                    <div class="product-name">SpinalMax</div>
+                    <div class="product-dose">📋 Dosing: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                    <div class="product-notes">
+                        <strong>Primary Indication:</strong> Spinal and peripheral nerve support<br>
+                        <strong>Why Selected:</strong> Essential for peripheral neuropathy markers and overall nerve health
+                    </div>
+                </div>
+
+                <div class="product-item">
+                    <div class="product-name">Liposomal Magnesium</div>
+                    <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                    <div class="product-notes">
+                        <strong>Primary Indication:</strong> Nerve function, muscle relaxation, NMDA receptor modulation<br>
+                        <strong>Why Selected:</strong> Critical for nerve transmission and neurological health - especially important for neuromuscular and excitotoxicity markers
+                    </div>
+                </div>
+
+                <div class="product-item">
+                    <div class="product-name">Liposomal D3/K2</div>
+                    <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                    <div class="product-notes">
+                        <strong>Primary Indication:</strong> Immune modulation, neuroprotection<br>
+                        <strong>Why Selected:</strong> Essential for immune balance and neurological health
+                    </div>
+                </div>
+            `;
+
+            if (vitalyzeAllowed && (categoryMap.demyelination.length > 0 || categoryMap.autoimmunity.length > 0)) {
+                protocolHTML += `
+                    <div class="product-item">
+                        <div class="product-name">Vitalyze (Adults Only)</div>
+                        <div class="product-dose">📋 Dosing: 1 capsule twice daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Neuroplasticity support, cognitive enhancement<br>
+                            <strong>Why Selected:</strong> Selected due to positive demyelination or neurodegenerative markers - supports nerve regeneration and brain plasticity
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (categoryMap.inflammation.length > 0 || categoryMap.bbb.length > 0) {
+                protocolHTML += `
+                    <h4>Anti-Inflammatory Support:</h4>
+                    <div class="product-item">
+                        <div class="product-name">TriCurcumin</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-6-12' ? '1 capsule' : '1 serving'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Neuroinflammation, blood-brain barrier support<br>
+                            <strong>Why Selected:</strong> Selected due to positive brain inflammation or blood-brain barrier markers - provides powerful anti-inflammatory support
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Liposomal Resveratrol Curcumin</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Antioxidant support, neuroprotection<br>
+                            <strong>Why Selected:</strong> Selected for inflammatory markers - combines resveratrol and curcumin for synergistic anti-inflammatory effects
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Liposomal Glutathione</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Master antioxidant, detoxification, neuroprotection<br>
+                            <strong>Why Selected:</strong> Selected for BBB disruption or inflammation - essential for reducing oxidative stress and supporting detoxification
+                        </div>
+                    </div>
+                `;
+            }
+
+            protocolHTML += `</div>`;
+
+            // PHASE 3: TARGETED SUPPORT BY MARKER CATEGORY
+            protocolHTML += `<div class="protocol-section"><h3>PHASE 3: Targeted Support Based on Your Results</h3>`;
+
+            // Demyelination markers
+            if (categoryMap.demyelination.length > 0) {
+                protocolHTML += `
+                    <h4>For Demyelination Markers:</h4>
+                    <div class="clinical-note">
+                        <strong>Your Positive Markers:</strong> ${categoryMap.demyelination.join(', ')}
+                    </div>
+                    <div class="product-item">
+                        <div class="product-name">Liposomal CoQ10</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Mitochondrial support, myelin protection<br>
+                            <strong>Why Selected:</strong> Critical for myelin health and nerve energy production
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Infection markers
+            if (categoryMap.infection.length > 0) {
+                protocolHTML += `
+                    <h4>For Viral/Bacterial Infections:</h4>
+                    <div class="clinical-note">
+                        <strong>Your Positive Markers:</strong> ${categoryMap.infection.join(', ')}
+                    </div>
+                `;
+
+                // Specific SSR protocols based on which viruses are positive
+                if (categoryMap.infection.some(m => m.includes('EBV'))) {
+                    protocolHTML += `
+                        <div class="product-item">
+                            <div class="product-name">EPST:SSR Kit (Epstein-Barr Virus)</div>
+                            <div class="product-dose">📋 SSR Kit 1 (1-10): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-dose">📋 SSR Kit 2 (10-1): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-notes">
+                                <strong>Primary Indication:</strong> Epstein-Barr Virus detoxification<br>
+                                <strong>Why Selected:</strong> Positive EBV markers - homeopathic desensitization to EBV antigens
+                            </div>
+                        </div>
+                        <div class="product-item">
+                            <div class="product-name">Virimmune</div>
+                            <div class="product-dose">📋 Dosing: As directed</div>
+                            <div class="product-notes">
+                                <strong>Primary Indication:</strong> Immune support against viral infections<br>
+                                <strong>Why Selected:</strong> Supports immune system in fighting EBV and other herpesviruses
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (categoryMap.infection.some(m => m.includes('CMV'))) {
+                    protocolHTML += `
+                        <div class="product-item">
+                            <div class="product-name">CYTO:SSR Kit (Cytomegalovirus)</div>
+                            <div class="product-dose">📋 SSR Kit 1 (1-10): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-dose">📋 SSR Kit 2 (10-1): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-notes">
+                                <strong>Primary Indication:</strong> Cytomegalovirus detoxification<br>
+                                <strong>Why Selected:</strong> Positive CMV markers - homeopathic desensitization
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (categoryMap.infection.some(m => m.includes('HSV'))) {
+                    protocolHTML += `
+                        <div class="product-item">
+                            <div class="product-name">HERS:SSR Kit (Herpes Simplex)</div>
+                            <div class="product-dose">📋 SSR Kit 1 (1-10): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-dose">📋 SSR Kit 2 (10-1): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-notes">
+                                <strong>Primary Indication:</strong> Herpes Simplex Virus detoxification<br>
+                                <strong>Why Selected:</strong> Positive HSV markers - homeopathic desensitization
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (categoryMap.infection.some(m => m.includes('HHV'))) {
+                    protocolHTML += `
+                        <div class="product-item">
+                            <div class="product-name">HV-6:SSR Kit (Human Herpesvirus 6)</div>
+                            <div class="product-dose">📋 SSR Kit 1 (1-10): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-dose">📋 SSR Kit 2 (10-1): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-notes">
+                                <strong>Primary Indication:</strong> HHV-6 detoxification<br>
+                                <strong>Why Selected:</strong> Positive HHV-6 markers - associated with neurological complications
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (categoryMap.infection.some(m => m.includes('Streptococcal'))) {
+                    protocolHTML += `
+                        <div class="product-item">
+                            <div class="product-name">STRE:SSR Kit (Streptococcal A)</div>
+                            <div class="product-dose">📋 SSR Kit 1 (1-10): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-dose">📋 SSR Kit 2 (10-1): 1 vial every 3rd day for 30 days</div>
+                            <div class="product-notes">
+                                <strong>Primary Indication:</strong> Streptococcal detoxification<br>
+                                <strong>Why Selected:</strong> Positive Strep A markers - may indicate PANDAS or strep-triggered autoimmunity
+                            </div>
+                        </div>
+                        <div class="clinical-note">
+                            <strong>PANDAS CONSIDERATION:</strong> Anti-Streptococcal A antibodies may indicate PANDAS (Pediatric Autoimmune Neuropsychiatric Disorder Associated with Streptococcus). Consider additional autoimmune support.
+                        </div>
+                    `;
+                }
+
+                // General anti-viral support
+                protocolHTML += `
+                    <div class="product-item">
+                        <div class="product-name">Smart Silver</div>
+                        <div class="product-dose">📋 Dosing: Age-appropriate oral dosing as directed</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Broad-spectrum antimicrobial support<br>
+                            <strong>Why Selected:</strong> Supports immune system against viral and bacterial infections
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Liposomal Vitamin C</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Immune support, antioxidant<br>
+                            <strong>Why Selected:</strong> High-dose vitamin C supports immune function during viral infections
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Liposomal Zinc</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Immune support, viral replication inhibition<br>
+                            <strong>Why Selected:</strong> Zinc is essential for immune function and inhibits viral replication
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Neurotransmitter dysfunction
+            if (categoryMap.autoimmunity.some(m => m.includes('Dopamine') || m.includes('Hydroxytryptamine') || m.includes('Glutamate'))) {
+                protocolHTML += `
+                    <h4>For Neurotransmitter Dysfunction:</h4>
+                    <div class="clinical-note">
+                        <strong>Your Positive Markers:</strong> ${categoryMap.autoimmunity.filter(m => m.includes('Dopamine') || m.includes('Hydroxytryptamine') || m.includes('Glutamate')).join(', ')}
+                    </div>
+                    <div class="product-item">
+                        <div class="product-name">Spectric</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Neurotransmitter support, mood regulation<br>
+                            <strong>Why Selected:</strong> Selected for neurotransmitter antibody markers - supports balanced brain chemistry
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Liposomal Calm</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily (additional dose during stress)</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Calming support, stress reduction, GABA support<br>
+                            <strong>Why Selected:</strong> Supports calm mood and balanced neurotransmitter function
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Elevate</div>
+                        <div class="product-dose">📋 Dosing: As directed</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Mood elevation, dopamine support<br>
+                            <strong>Why Selected:</strong> Selected for dopamine or serotonin markers - supports positive mood
+                        </div>
+                    </div>
+                `;
+            }
+
+            // BBB disruption - emphasize gut-brain axis
+            if (categoryMap.bbb.length > 0) {
+                protocolHTML += `
+                    <h4>For Blood-Brain Barrier Disruption - Gut-Brain Axis Support:</h4>
+                    <div class="clinical-note">
+                        <strong>Your Positive Markers:</strong> ${categoryMap.bbb.join(', ')}<br>
+                        <strong>CRITICAL:</strong> Blood-brain barrier disruption ("leaky brain") is often connected to intestinal permeability ("leaky gut"). Healing the gut is essential for brain recovery.
+                    </div>
+                    <div class="product-item">
+                        <div class="product-name">Leaky Gut Formula</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-2-5' ? '5 drops' : patientAge === 'child-6-12' ? '7 drops' : '10 drops'} three times daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Intestinal permeability repair<br>
+                            <strong>Why Selected:</strong> Selected for BBB markers - gut and brain barriers are connected
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Intestinal Restore</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} 1-3 times daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Gut lining repair, amino acid support<br>
+                            <strong>Why Selected:</strong> Provides building blocks for intestinal and blood-brain barrier repair
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">BioPro GI</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-6-12' ? '1 capsule' : '1 capsule twice'} daily (away from food)</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Probiotic support, gut microbiome balance<br>
+                            <strong>Why Selected:</strong> Restores healthy gut flora essential for gut-brain axis function
+                        </div>
+                    </div>
+                `;
+            }
+
+            protocolHTML += `</div>`;
+
+            // PHASE 4: FOUNDATIONAL WELLNESS SUPPORT
+            protocolHTML += `
+                <div class="protocol-section">
+                    <h3>PHASE 4: Foundational Wellness Support</h3>
+                    
+                    <div class="product-item">
+                        <div class="product-name">OmniEssentials</div>
+                        <div class="product-dose">📋 Dosing: ${vitalyzeAllowed ? '4 capsules' : '2-3 capsules'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Comprehensive multivitamin/mineral foundation<br>
+                            <strong>Why Selected:</strong> Essential nutritional foundation for all neurological healing protocols
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Liposomal Restore</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Cellular repair and regeneration<br>
+                            <strong>Why Selected:</strong> Supports overall cellular health and tissue repair
+                        </div>
+                    </div>
+
+                    <div class="product-item">
+                        <div class="product-name">Liposomal Methyl B</div>
+                        <div class="product-dose">📋 Dosing: ${patientAge === 'child-4-8' ? '1/2 serving' : patientAge === 'child-9-12' ? '3/4 serving' : '1 serving'} daily</div>
+                        <div class="product-notes">
+                            <strong>Primary Indication:</strong> Methylation support, nerve health, B vitamin support<br>
+                            <strong>Why Selected:</strong> Critical for nerve function, myelin production, and detoxification pathways
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // TREATMENT TIMELINE & MONITORING
+            protocolHTML += `
+                <div class="protocol-section">
+                    <h3>Treatment Timeline & Monitoring</h3>
+                    
+                    <div class="clinical-note">
+                        <strong>Initial Protocol Duration:</strong> 3-6 months minimum<br>
+                        <strong>Detox Phase:</strong> Complete 60-day cycle before reassessment<br>
+                        <strong>Retest Recommendation:</strong> Retest Neural Zoomer Plus every 6-12 months to monitor antibody levels<br>
+                        <strong>Maintenance Phase:</strong> Continue core products at reduced frequency once markers normalize<br>
+                        <strong>Long-term:</strong> Complete resolution may take 12-24 months depending on chronicity
+                    </div>
+
+                    <h4>Important Considerations:</h4>
+                    <div class="clinical-note">
+                        <strong>Medication Spacing:</strong> Space homeopathic drops 15 minutes from medications<br>
+                        <strong>Detox Reactions:</strong> May occur during initial phase - reduce dosing if severe<br>
+                        <strong>Pregnancy/Nursing:</strong> Consult healthcare practitioner before use<br>
+                        <strong>Children under 2:</strong> Not recommended without practitioner guidance
+                    </div>
+                </div>
+            `;
+
+            // LIFESTYLE RECOMMENDATIONS
+            protocolHTML += `
+                <div class="protocol-section">
+                    <h3>Lifestyle & Dietary Recommendations</h3>
+                    
+                    <div class="clinical-note">
+                        <strong>Dietary Guidelines:</strong><br>
+                        • <strong>Strict gluten-free diet</strong> - gluten increases both intestinal and blood-brain barrier permeability<br>
+                        • <strong>Consider dairy-free trial</strong> (90 days) - casein has molecular mimicry with neural tissue<br>
+                        • <strong>Anti-inflammatory whole foods diet</strong> rich in omega-3 fatty acids<br>
+                        • <strong>Eliminate:</strong> processed foods, artificial additives, industrial seed oils<br>
+                        • <strong>Increase:</strong> colorful vegetables, wild-caught fish, organic poultry, healthy fats<br><br>
+
+                        <strong>Lifestyle Factors:</strong><br>
+                        • <strong>Sleep optimization:</strong> 7-9 hours nightly, consistent sleep-wake times<br>
+                        • <strong>Stress reduction:</strong> meditation, yoga, deep breathing, nature exposure<br>
+                        • <strong>Moderate exercise:</strong> avoid overtraining which can worsen autoimmunity<br>
+                        • <strong>Environmental toxin avoidance:</strong> chemicals, fragrances, mold exposure<br>
+                        • <strong>EMF reduction:</strong> especially near head during sleep
+                    </div>
+                </div>
+            `;
+
+            // Footer with print button
+            protocolHTML += `
+                <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f8f9ff; border-radius: 10px;">
+                    <p style="font-size: 0.9em; color: #666; margin: 10px 0;">
+                        Protocol Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+                    </p>
+                    <p style="font-size: 0.85em; color: #888; margin: 10px 0;">
+                        DesBio Treatment System | Personalized Neurological Support
+                    </p>
+                    <button onclick="window.print()" style="margin-top: 15px; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1em; cursor: pointer; font-weight: 600;">
+                        🖨️ Print Protocol
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('protocolOutput').innerHTML = protocolHTML;
+            document.getElementById('protocolOutput').classList.add('show');
+            document.getElementById('protocolOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all selections?')) {
+                document.getElementById('patientName').value = '';
+                document.getElementById('patientDOB').value = '';
+                document.getElementById('patientAge').value = '';
+                document.getElementById('testDate').value = '';
+                document.getElementById('providerName').value = '';
+                
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                    const index = checkbox.id.replace('marker', '');
+                    const statusSelect = document.getElementById(`status${index}`);
+                    if (statusSelect) {
+                        statusSelect.disabled = true;
+                        statusSelect.value = '';
+                    }
+                });
+
+                document.querySelectorAll('.marker-item').forEach(item => {
+                    item.classList.remove('positive', 'borderline');
+                });
+
+                document.getElementById('protocolOutput').classList.remove('show');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>
